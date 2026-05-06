@@ -24,7 +24,7 @@ export default function CoLivingStrategyOverview({ strategyKey, setStrategyKey, 
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: "easeOut" }}
-      className="rounded-2xl border p-6 mb-6"
+      className="rounded-2xl border p-4 sm:p-6 mb-6"
       style={{ backgroundColor: "#17172a", borderColor: "#2e2e3e" }}
     >
       <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between mb-5">
@@ -40,13 +40,13 @@ export default function CoLivingStrategyOverview({ strategyKey, setStrategyKey, 
           </p>
         </div>
 
-        <div className="flex gap-1 rounded-xl p-1 self-start" style={{ backgroundColor: "#1e1e2e" }}>
+        <div className="flex flex-wrap gap-1 rounded-xl p-1 self-start max-w-full" style={{ backgroundColor: "#1e1e2e" }}>
           {strategyEntries.map(([key, strategy]) => (
             <button
               key={key}
               type="button"
               onClick={() => setStrategyKey(key)}
-              className="px-4 py-2 rounded-lg text-sm font-bold transition-all duration-200"
+              className="px-3 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all duration-200"
               style={{
                 backgroundColor: strategyKey === key ? "#60a5fa" : "transparent",
                 color: strategyKey === key ? "#0f0f1a" : "#8b8ba7",
@@ -74,7 +74,7 @@ export default function CoLivingStrategyOverview({ strategyKey, setStrategyKey, 
               whileHover={strategyCardMotion.whileHover}
               transition={strategyCardMotion.transition}
             >
-              <div className="flex items-center justify-between gap-3 mb-3">
+              <div className="flex flex-col items-start sm:flex-row sm:items-center sm:justify-between gap-3 mb-3">
                 <div>
                   <p className="text-xs font-semibold mb-1" style={{ color: isActive ? "#93c5fd" : "#8b8ba7" }}>
                     {strategy.selectorLabel[language]}
@@ -98,7 +98,7 @@ export default function CoLivingStrategyOverview({ strategyKey, setStrategyKey, 
                 {strategy.description[language]}
               </p>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <MiniMetric
                   label={t.financial.inventoryImpact}
                   value={`${formatNumber(strategy.inventoryCount)} ${t.financial.unitsWord}`}
@@ -135,7 +135,7 @@ export default function CoLivingStrategyOverview({ strategyKey, setStrategyKey, 
               <p className="text-sm font-black mb-3" style={{ color: "#f0f0fa" }}>
                 {strategy.title[language]}
               </p>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {strategy.merits[language].map((item, index) => {
                   const Icon = insightIcons[index % insightIcons.length];
 
@@ -204,7 +204,7 @@ export default function CoLivingStrategyOverview({ strategyKey, setStrategyKey, 
           <div className="space-y-3">
             {strategyEntries.map(([key, strategy]) => (
               <div key={key} className="rounded-xl border p-4" style={{ backgroundColor: key === strategyKey ? "#1c2436" : "#17172a", borderColor: key === strategyKey ? "rgba(96, 165, 250, 0.45)" : "#2e2e3e" }}>
-                <div className="flex items-center justify-between gap-3 mb-2">
+                <div className="flex flex-col items-start sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
                   <p className="text-sm font-black" style={{ color: "#f0f0fa" }}>
                     {strategy.selectorLabel[language]}
                   </p>
