@@ -1,6 +1,6 @@
 import { forwardRef, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Expand, ExternalLink, FileDown, Minimize } from "lucide-react";
+import { ChevronDown, Expand, ExternalLink, FileDown, Minimize } from "lucide-react";
 import { occupancyOptions } from "@/data/financialAssumptions";
 import { executiveModel } from "@/data/executiveModel";
 import { coLivingModel } from "@/data/coLivingModel";
@@ -61,6 +61,7 @@ const FinancialStudy = forwardRef(function FinancialStudy({ t }, forwardedRef) {
   const [animateCountersFromZero, setAnimateCountersFromZero] = useState(!hasAnimatedFinancialStudyOnce);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
+  const [showFullscreenScrollHint, setShowFullscreenScrollHint] = useState(false);
   const initialValuesRef = useRef({
     model: initialModelKey,
     strategy: coLivingModel.defaultStrategy,
@@ -123,6 +124,77 @@ const FinancialStudy = forwardRef(function FinancialStudy({ t }, forwardedRef) {
       document.removeEventListener("fullscreenchange", handleFullscreenChange);
     };
   }, []);
+
+  useEffect(() => {
+    const fullscreenContainer = sectionRef.current;
+
+    if (!isFullscreen || !fullscreenContainer) {
+      setShowFullscreenScrollHint(false);
+      return undefined;
+    }
+
+    const updateScrollHint = () => {
+      setShowFullscreenScrollHint(fullscreenContainer.scrollTop <= 80);
+    };
+
+    const scrollByViewport = (direction) => {
+      fullscreenContainer.scrollBy({
+        top: direction * Math.max(fullscreenContainer.clientHeight * 0.85, 240),
+        behavior: "smooth",
+      });
+    };
+
+    const isInteractiveTarget = () => {
+      const activeElement = document.activeElement;
+
+      if (!activeElement) {
+        return false;
+      }
+
+      const tagName = activeElement.tagName;
+
+      return (
+        activeElement.isContentEditable ||
+        tagName === "INPUT" ||
+        tagName === "TEXTAREA" ||
+        tagName === "SELECT"
+      );
+    };
+
+    const handleKeyDown = (event) => {
+      if (document.fullscreenElement !== fullscreenContainer || isInteractiveTarget()) {
+        return;
+      }
+
+      if (event.key === "Escape") {
+        event.preventDefault();
+        document.exitFullscreen().catch((error) => {
+          console.error("Failed to exit fullscreen", error);
+        });
+        return;
+      }
+
+      if (event.key === "ArrowDown" || event.key === "PageDown") {
+        event.preventDefault();
+        scrollByViewport(1);
+        return;
+      }
+
+      if (event.key === "ArrowUp" || event.key === "PageUp") {
+        event.preventDefault();
+        scrollByViewport(-1);
+      }
+    };
+
+    updateScrollHint();
+    fullscreenContainer.addEventListener("scroll", updateScrollHint, { passive: true });
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      fullscreenContainer.removeEventListener("scroll", updateScrollHint);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isFullscreen]);
 
   const toggleFullscreen = async () => {
     if (!sectionRef.current) {
@@ -213,7 +285,7 @@ const FinancialStudy = forwardRef(function FinancialStudy({ t }, forwardedRef) {
   return (
     <section
       ref={setCombinedRef}
-      className="rounded-t-3xl -mx-6 px-6 pt-8 pb-12 mt-2"
+      className={`rounded-t-3xl -mx-6 px-6 pt-8 pb-12 mt-2 relative ${isFullscreen ? "presentation-mode" : ""}`}
       style={{ backgroundColor: "#0f0f1a" }}
     >
       <div className="financial-actions flex flex-wrap items-center justify-center sm:justify-between gap-3 mb-6">
@@ -468,6 +540,29 @@ const FinancialStudy = forwardRef(function FinancialStudy({ t }, forwardedRef) {
           </div>
         </div>
       </div>
+
+      {isFullscreen && (
+        <>
+          <div className="fullscreen-fade-overlay" aria-hidden="true" />
+          <motion.div
+            className="fullscreen-scroll-indicator"
+            aria-hidden="true"
+            animate={{
+              opacity: showFullscreenScrollHint ? 1 : 0,
+              y: showFullscreenScrollHint ? 0 : 12,
+            }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
+          >
+            <span>{t.financial.fullscreenScrollHint}</span>
+            <motion.span
+              animate={{ y: [0, 5, 0] }}
+              transition={{ duration: 1.4, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+            >
+              <ChevronDown size={16} />
+            </motion.span>
+          </motion.div>
+        </>
+      )}
     </section>
   );
 });

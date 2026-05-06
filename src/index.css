@@ -37,12 +37,93 @@
 
   html {
     direction: rtl;
+    overflow-y: auto;
+    height: auto;
+    scroll-behavior: smooth;
+    scrollbar-gutter: stable;
   }
 
   body {
     font-family: "Cairo", sans-serif;
     background-color: #ffffff;
     color: hsl(var(--foreground));
+    overflow-y: auto;
+    height: auto;
+    scrollbar-gutter: stable;
+  }
+}
+
+.fullscreen,
+.presentation-mode {
+  overflow-y: auto;
+  max-height: 100vh;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(96, 165, 250, 0.68) rgba(148, 163, 184, 0.12);
+}
+
+.presentation-mode::-webkit-scrollbar,
+.fullscreen::-webkit-scrollbar {
+  width: 10px;
+}
+
+.presentation-mode::-webkit-scrollbar-track,
+.fullscreen::-webkit-scrollbar-track {
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.presentation-mode::-webkit-scrollbar-thumb,
+.fullscreen::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(96, 165, 250, 0.88), rgba(52, 211, 153, 0.76));
+  border-radius: 9999px;
+  border: 2px solid rgba(15, 15, 26, 0.58);
+}
+
+.presentation-mode::-webkit-scrollbar-thumb:hover,
+.fullscreen::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(125, 211, 252, 0.96), rgba(74, 222, 128, 0.84));
+}
+
+.fullscreen-fade-overlay {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  height: 128px;
+  pointer-events: none;
+  z-index: 30;
+  background: linear-gradient(180deg, rgba(15, 15, 26, 0), rgba(15, 15, 26, 0.92));
+}
+
+.fullscreen-scroll-indicator {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  z-index: 40;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  padding: 0.65rem 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(15, 15, 26, 0.72);
+  color: rgba(240, 240, 250, 0.92);
+  box-shadow: 0 14px 38px rgba(15, 15, 26, 0.34);
+  backdrop-filter: blur(10px);
+  pointer-events: none;
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+@media (max-width: 640px) {
+  .fullscreen-fade-overlay {
+    height: 104px;
+  }
+
+  .fullscreen-scroll-indicator {
+    bottom: 18px;
+    padding: 0.55rem 0.85rem;
+    font-size: 0.75rem;
   }
 }
 
