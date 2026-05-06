@@ -5,6 +5,7 @@ import { occupancyOptions } from "@/data/financialAssumptions";
 import { executiveModel } from "@/data/executiveModel";
 import { coLivingModel } from "@/data/coLivingModel";
 import { MARKET_VALIDATION_URL } from "@/data/projectData";
+import CoLivingStrategyOverview from "@/components/CoLivingStrategyOverview";
 import FinancialDistribution from "@/components/FinancialDistribution";
 import KPICards from "@/components/KPICards";
 import ScenarioContext from "@/components/ScenarioContext";
@@ -54,12 +55,18 @@ function formatPercent(value) {
 const FinancialStudy = forwardRef(function FinancialStudy({ t }, forwardedRef) {
   const initialModelKey = MODEL_OPTIONS[0]?.key ?? "executive";
   const [model, setModel] = useState(initialModelKey);
+  const [coLivingStrategy, setCoLivingStrategy] = useState(coLivingModel.defaultStrategy);
   const [scenario, setScenario] = useState("base");
   const [occupancy, setOccupancy] = useState(80);
   const [animateCountersFromZero, setAnimateCountersFromZero] = useState(!hasAnimatedFinancialStudyOnce);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isExportingPdf, setIsExportingPdf] = useState(false);
-  const initialValuesRef = useRef({ model: initialModelKey, scenario: "base", occupancy: 80 });
+  const initialValuesRef = useRef({
+    model: initialModelKey,
+    strategy: coLivingModel.defaultStrategy,
+    scenario: "base",
+    occupancy: 80,
+  });
   const sectionRef = useRef(null);
   const exportContentRef = useRef(null);
 
@@ -95,6 +102,7 @@ const FinancialStudy = forwardRef(function FinancialStudy({ t }, forwardedRef) {
     const initialValues = initialValuesRef.current;
     const hasChangedFromInitial =
       model !== initialValues.model ||
+      coLivingStrategy !== initialValues.strategy ||
       scenario !== initialValues.scenario ||
       occupancy !== initialValues.occupancy;
 
@@ -102,7 +110,7 @@ const FinancialStudy = forwardRef(function FinancialStudy({ t }, forwardedRef) {
       hasAnimatedFinancialStudyOnce = true;
       setAnimateCountersFromZero(false);
     }
-  }, [model, scenario, occupancy, animateCountersFromZero]);
+  }, [model, coLivingStrategy, scenario, occupancy, animateCountersFromZero]);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -178,10 +186,13 @@ const FinancialStudy = forwardRef(function FinancialStudy({ t }, forwardedRef) {
   };
 
   const selectedModel = MODEL_DATA[model];
-  const selectedScenario = selectedModel.scenarios[scenario];
+  const isCoLiving = model === "coLiving";
+  const selectedVariant = isCoLiving ? selectedModel.strategies[coLivingStrategy] : selectedModel;
+  const strategyEntries = isCoLiving ? Object.entries(selectedModel.strategies) : [];
+  const selectedScenario = selectedVariant.scenarios[scenario];
   const selectedModelData = selectedScenario.occupancy[occupancy];
-  const recommendedOccupancy = selectedModel.recommendedOccupancy ?? 80;
-  const operatorFeeRate = selectedModel.operatorFeeRate ?? 0;
+  const recommendedOccupancy = selectedVariant.recommendedOccupancy ?? 80;
+  const operatorFeeRate = selectedVariant.operatorFeeRate ?? 0;
 
   const kpis = {
     revenueAt100: selectedScenario.revenueAt100,
@@ -418,6 +429,16 @@ const FinancialStudy = forwardRef(function FinancialStudy({ t }, forwardedRef) {
           </div>
         </div>
 
+        {isCoLiving && (
+          <CoLivingStrategyOverview
+            strategyKey={coLivingStrategy}
+            setStrategyKey={setCoLivingStrategy}
+            strategyEntries={strategyEntries}
+            selectedStrategy={selectedVariant}
+            t={t}
+          />
+        )}
+
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-6 mb-6">
           <div className="lg:col-span-3 space-y-4">
             <KPICards
@@ -438,7 +459,7 @@ const FinancialStudy = forwardRef(function FinancialStudy({ t }, forwardedRef) {
               t={t}
             />
             <ScenarioContext
-              selectedModel={selectedModel}
+              selectedModel={selectedVariant}
               scenario={scenario}
               scenarioLabel={selectedScenarioLabel}
               occupancy={formatPercent(occupancy)}
